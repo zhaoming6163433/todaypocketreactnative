@@ -33,6 +33,7 @@ class Video extends PureComponent {
         this.fetchData = this.fetchData.bind(this);
         this.appendinfo = this.appendinfo.bind(this);
         this.onSwitchToEmojiMode = this.onSwitchToEmojiMode.bind(this);
+        this.constructNormalMessage = this.constructNormalMessage.bind(this);
     }
     //当props发生变化时执行
     componentWillReceiveProps(nextProps){
@@ -44,6 +45,22 @@ class Video extends PureComponent {
         if (Platform.OS === "android") {
             this.refs["ChatInput"].setMenuContainerHeight(316)
           }
+    }
+    constructNormalMessage() {
+
+        let message = {
+            msgId: '1',
+            status: "send_succeed",
+            isOutgoing: true,
+            fromUser: {
+              userId: "1",
+              displayName: "我",
+              avatarPath: "http://www.todaypocket.cn/todaypocket/static/img/xiaobing.bed8477.png"
+            },
+            timeString: ""
+          }
+      
+        return message
     }
     appendinfo(text,userid,isOutgoing,name){
         let date = new Date();
@@ -64,7 +81,7 @@ class Video extends PureComponent {
             fromUser: {
               userId: userid,
               displayName: name||"我",
-              avatarPath: ""
+              avatarPath: userid=='1'?"images":"http://www.todaypocket.cn/todaypocket/static/img/xiaobing.bed8477.png"
             },
             timeString: time
           }];
@@ -137,8 +154,20 @@ class Video extends PureComponent {
         this.showinfo(text);
     }
     //选中视频或图片后点击发送
-    onSendGalleryFiles(){
-
+    onSendGalleryFiles(mediaFiles){
+        for (index in mediaFiles) {
+            var message = this.constructNormalMessage()
+            if (mediaFiles[index].mediaType == "image") {
+              message.msgType = "image"
+              message.mediaPath = mediaFiles[index].mediaPath
+            } else {
+              message.msgType = "video"
+              message.duration = mediaFiles[index].duration
+            }
+      
+            AuroraIMUIController.appendMessages([message])
+            AuroraIMUIController.scrollToBottom(true)
+        }
     }
     //点击拍照按钮
     onTakePicture(){
